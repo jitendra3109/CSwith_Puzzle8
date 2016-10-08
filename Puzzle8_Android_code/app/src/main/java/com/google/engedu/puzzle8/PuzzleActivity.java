@@ -25,9 +25,9 @@ public class PuzzleActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private Bitmap imageBitmap = null;
     private PuzzleBoardView boardView;
-    //private ImageView pictureView;///
-    private String mTempPhotoPath;
-    private Uri mTempImageUri;
+    //private ImageView picture;///
+    private String currentPhotoPath;
+    private Uri photoUri;
     private String LOG_TAG = "DLG";
 
 
@@ -42,7 +42,7 @@ public class PuzzleActivity extends AppCompatActivity {
         // Some setup of the view.
         boardView.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
         container.addView(boardView);
-        //pictureView = (ImageView) findViewById(R.id.pictureView);///
+        //picture = (ImageView) findViewById(R.id.picture);///
 
     }
 
@@ -69,21 +69,22 @@ public class PuzzleActivity extends AppCompatActivity {
     }
 
     public void dispatchTakePictureIntent(View view) {
-        // https://developer.android.com/training/camera/photobasics.html
+            // website developer.android.com basic code for request  image
 
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);///
-        if (intent.resolveActivity(getPackageManager()) != null) {///
-           // startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);///
-            startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);///
+         if (intent.resolveActivity(getPackageManager()) != null) {///
+
+            //startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);///
                       File photoFile = null;
                         try {
                                 photoFile = createImageFile();
                         } catch (IOException ex){
-                                // nothing
+                            // Error occurred while creating the File
                                     }
+             // Continue only if the File was successfully created
                         if (photoFile != null){
-                                mTempImageUri = Uri.fromFile(photoFile);
-                                intent.putExtra(MediaStore.EXTRA_OUTPUT, mTempImageUri);
+                                photoUri = Uri.fromFile(photoFile);
+                                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                                 startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
                             }
 
@@ -91,7 +92,7 @@ public class PuzzleActivity extends AppCompatActivity {
 
         }
     }
-
+  // from developer android website
     private File createImageFile() throws IOException {
                 // Create an image file name
                         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -103,8 +104,8 @@ public class PuzzleActivity extends AppCompatActivity {
                                 storageDir      /* directory */
                                );
 
-
-                               mTempPhotoPath = "file:" + image.getAbsolutePath();
+                            // getting path of image
+                               currentPhotoPath = "file:" + image.getAbsolutePath();
                return image;
            }
 
@@ -115,15 +116,15 @@ public class PuzzleActivity extends AppCompatActivity {
                       //Bitmap imageBitmap = (Bitmap) extras.get("data"); ///
                       //  pictureView.setImageBitmap(imageBitmap);  ///
                   try {
-                               imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mTempImageUri);
+                               imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
                                 boardView.initialize(imageBitmap);
-                                boardView.invalidate(); // re draw
+                                boardView.invalidate();
                             } catch (Exception e){
                                 Log.d(LOG_TAG, "imageDraw " + e.toString());
                             }
 
 
-                    }
+        }
     }
 
     public void shuffleImage(View view) {

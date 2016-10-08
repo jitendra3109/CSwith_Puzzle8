@@ -18,6 +18,9 @@ public class PuzzleBoard {
     };
    // private ArrayList<PuzzleTile> tiles;
      private ArrayList<PuzzleTile> tiles = new ArrayList<>();///
+    public int countStep = 0;
+    public PuzzleBoard previousBoard = null;
+
      private String LOG_TAG = "DLG";//
     PuzzleBoard(Bitmap bitmap, int parentWidth) {///
 
@@ -40,8 +43,13 @@ public class PuzzleBoard {
 
     PuzzleBoard(PuzzleBoard otherBoard) {
         tiles = (ArrayList<PuzzleTile>) otherBoard.tiles.clone();
+        countStep = otherBoard.countStep + 1;
+        previousBoard = otherBoard;
 
     }
+    public PuzzleBoard getPreviousBoard(){
+              return previousBoard;
+            }
 
     public void reset() {
         // Nothing for now but you may have things to reset once you implement the solver.
@@ -113,11 +121,44 @@ public class PuzzleBoard {
     }
 
     public ArrayList<PuzzleBoard> neighbours() {
-        return null;
+        int i, j=0;
+               // get empty tile
+                        for (i=0; i<NUM_TILES; i++){
+                        for (j=0; j<NUM_TILES; j++){
+                            if (tiles.get(i * NUM_TILES + j) == null){
+                                break;
+                                    }
+                           }
+                        if (j != NUM_TILES) break;
+                    }
+                int nullX = j, nullY = i;
+                ArrayList<PuzzleBoard> neighbourBoards = new ArrayList<>();
+                // evaluate neighbours
+                        // find and add them in ArrayList
+                                for (i=0; i<4; i++){
+                        int x = nullX + NEIGHBOUR_COORDS[i][0];
+                        int y = nullY + NEIGHBOUR_COORDS[i][1];
+                        if (x >= 0 && x < NUM_TILES && y >= 0 && y < NUM_TILES){
+                                PuzzleBoard copy = new PuzzleBoard(this);
+                               copy.swapTiles(nullY * NUM_TILES + nullX, y * NUM_TILES + x);
+                                neighbourBoards.add(copy);
+                            }
+                    }
+                return neighbourBoards;
     }
 
     public int priority() {
-        return 0;
+        int count = countStep, realPos;
+                for (int i=0; i<NUM_TILES; i++){
+                       for (int j=0; j<NUM_TILES; j++){
+                                if (tiles.get(NUM_TILES * i + j) == null)
+                                        continue;
+                              realPos = tiles.get(NUM_TILES * i + j).getNumber();
+                                count += Math.abs( (realPos / NUM_TILES) - i );
+                                count += Math.abs( (realPos % NUM_TILES) - j );
+                            }
+                   }
+                return count;
     }
 
 }

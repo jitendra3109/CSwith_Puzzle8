@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.Random;
 
 public class PuzzleBoardView extends View {
@@ -17,6 +19,7 @@ public class PuzzleBoardView extends View {
     private PuzzleBoard puzzleBoard;
     private ArrayList<PuzzleBoard> animation;
     private Random random = new Random();
+    private final String LOG_TAG = "DLG";
 
     public PuzzleBoardView(Context context) {
         super(context);
@@ -53,6 +56,13 @@ public class PuzzleBoardView extends View {
     public void shuffle() {
         if (animation == null && puzzleBoard != null) {
             // Do something. Then:
+            ArrayList<PuzzleBoard> boards;
+                        for (int i = 0; i < NUM_SHUFFLE_STEPS; i++){
+                                boards = puzzleBoard.neighbours();
+                               puzzleBoard = boards.get(random.nextInt(boards.size()));
+                            }
+
+
             puzzleBoard.reset();
             invalidate();
         }
@@ -77,5 +87,40 @@ public class PuzzleBoardView extends View {
     }
 
     public void solve() {
+                Comparator<PuzzleBoard> comparator = new PuzzleBoardComparator();
+                PriorityQueue<PuzzleBoard> boardQueue = new PriorityQueue<PuzzleBoard>(1000, comparator);
+                puzzleBoard.countStep = 0; puzzleBoard.previousBoard = null;
+                boardQueue.add(puzzleBoard);
+                ArrayList<PuzzleBoard> solution = new ArrayList<>();
+                PuzzleBoard previousBoard = null;
+
+                        while (!boardQueue.isEmpty()){
+                        PuzzleBoard temp = boardQueue.poll();
+                        solution.add(temp);
+            //            Log.d(LOG_TAG, "Solving " + temp.priority());
+                                if ((temp.priority() - temp.countStep) != 0){ // not the solution
+                                for (PuzzleBoard p : temp.neighbours()){
+                                        if (!p.equals(previousBoard)) {
+                                                p.countStep = 0;
+                                                boardQueue.add(p);
+                                            }
+                                    }
+                            } else { // solution
+                                animation = solution;
+                                invalidate();
+                                break;
+                            }
+                       previousBoard = temp;
+                    }
     }
 }
+class PuzzleBoardComparator implements Comparator<PuzzleBoard> {
+    @Override
+    public int compare(PuzzleBoard lhs, PuzzleBoard rhs) {
+                if (lhs.priority() < rhs.priority())
+                    return -1;
+                if (lhs.priority() > rhs.priority())
+                   return 1;
+                return 0;
+            }
+        }

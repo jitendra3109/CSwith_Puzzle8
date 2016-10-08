@@ -20,6 +20,8 @@
     </application>
     <uses-feature android:name="android.hardware.camera"
         android:required="true" />
+    <!--this is provide permission -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
+    <!--After sdk 18 don't requre-->
 </manifest>
